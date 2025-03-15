@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Star,
   Users,
@@ -23,10 +23,10 @@ import {
   Camera,
   ScanLine,
   Sun,
-} from "lucide-react"
-import { Button } from "./components/ui/button"
-import { Card, CardContent } from "./components/ui/card"
-import { Badge } from "./components/ui/badge"
+} from "lucide-react";
+import { Button } from "./components/ui/button";
+import { Card, CardContent } from "./components/ui/card";
+import { Badge } from "./components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,133 +35,139 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./components/ui/dropdown-menu"
-import { Popover, PopoverContent, PopoverTrigger } from "./components/ui/popover"
-import { Checkbox } from "./components/ui/checkbox"
-import { RadioGroup, RadioGroupItem } from "./components/ui/radio-group"
-import { Label } from "./components/ui/label"
-import { Separator } from "./components/ui/separator"
-import { useTheme } from "next-themes"
-import AddPersonaModal from "./components/add-persona-modal"
-import OcrPersonaCapture from "./components/ocr-persona-capture"
-import NotificationSettings from "./components/notification-settings"
-import SettingsDialog from "./components/settings-dialog"
-import QuickActions from "./components/quick-actions"
-import type { Persona } from "./types/persona"
-import axios from "axios"
+} from "./components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "./components/ui/popover";
+import { Checkbox } from "./components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "./components/ui/radio-group";
+import { Label } from "./components/ui/label";
+import { Separator } from "./components/ui/separator";
+import { useTheme } from "next-themes";
+import AddPersonaModal from "./components/add-persona-modal";
+import OcrPersonaCapture from "./components/ocr-persona-capture";
+import NotificationSettings from "./components/notification-settings";
+import SettingsDialog from "./components/settings-dialog";
+import QuickActions from "./components/quick-actions";
+import type { Persona } from "./types/persona";
+import axios from "axios";
 
 // Add imports for the dialogs we'll create
-import ScheduleMeetingDialog from "./components/schedule-meeting-dialog"
-import SendEmailDialog from "./components/send-email-dialog"
-import InviteTeamMemberDialog from "./components/invite-team-member-dialog"
-import ShareDashboardDialog from "./components/share-dashboard-dialog"
-import ImportDataDialog from "./components/import-data-dialog"
-import ExportDataDialog from "./components/export-data-dialog"
-import GenerateReportDialog from "./components/generate-report-dialog"
-import AnalyticsDialog from "./components/analytics-dialog"
-import BackupDataDialog from "./components/backup-data-dialog"
-import RestoreDataDialog from "./components/restore-data-dialog"
+import ScheduleMeetingDialog from "./components/schedule-meeting-dialog";
+import SendEmailDialog from "./components/send-email-dialog";
+import InviteTeamMemberDialog from "./components/invite-team-member-dialog";
+import ShareDashboardDialog from "./components/share-dashboard-dialog";
+import ImportDataDialog from "./components/import-data-dialog";
+import ExportDataDialog from "./components/export-data-dialog";
+import GenerateReportDialog from "./components/generate-report-dialog";
+import AnalyticsDialog from "./components/analytics-dialog";
+import BackupDataDialog from "./components/backup-data-dialog";
+import RestoreDataDialog from "./components/restore-data-dialog";
 
-type ViewMode = "card" | "list" | "grid" | "compact"
-type SortOption = "name" | "type" | "added" | "recent"
+type ViewMode = "card" | "list" | "grid" | "compact";
+type SortOption = "name" | "type" | "added" | "recent";
 type FilterCriteria = {
-  type: string[]
-  status: string[]
-  location: string[]
-  dateAdded: string
-}
+  type: string[];
+  status: string[];
+  location: string[];
+  dateAdded: string;
+};
 
 export default function PersonaDashboard() {
-  const router = useRouter()
-  const { theme, setTheme } = useTheme()
-  const [personas, setPersonas] = useState<Persona[]>([])
-  const [favorites, setFavorites] = useState<Persona[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isOcrModalOpen, setIsOcrModalOpen] = useState(false)
-  const [isNotificationSettingsOpen, setIsNotificationSettingsOpen] = useState(false)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<ViewMode>("list")
-  const [favViewMode, setFavViewMode] = useState<ViewMode>("grid")
-  const [sortBy, setSortBy] = useState<SortOption>("name")
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
-  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false)
+  const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const [personas, setPersonas] = useState<Persona[]>([]);
+  const [favorites, setFavorites] = useState<Persona[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isOcrModalOpen, setIsOcrModalOpen] = useState(false);
+  const [isNotificationSettingsOpen, setIsNotificationSettingsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isScheduleMeetingOpen, setIsScheduleMeetingOpen] = useState(false);
+  const [isSendEmailOpen, setIsSendEmailOpen] = useState(false);
+  const [isInviteTeamMemberOpen, setIsInviteTeamMemberOpen] = useState(false);
+  const [isShareDashboardOpen, setIsShareDashboardOpen] = useState(false);
+  const [isImportDataOpen, setIsImportDataOpen] = useState(false);
+  const [isExportDataOpen, setIsExportDataOpen] = useState(false);
+  const [isGenerateReportOpen, setIsGenerateReportOpen] = useState(false);
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
+  const [isBackupDataOpen, setIsBackupDataOpen] = useState(false);
+  const [isRestoreDataOpen, setIsRestoreDataOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [favViewMode, setFavViewMode] = useState<ViewMode>("grid");
+  const [sortBy, setSortBy] = useState<SortOption>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
   const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>({
     type: [],
     status: [],
     location: [],
     dateAdded: "all",
-  })
-
-  // Add state variables for all the dialogs
-  const [isScheduleMeetingOpen, setIsScheduleMeetingOpen] = useState(false)
-  const [isSendEmailOpen, setIsSendEmailOpen] = useState(false)
-  const [isInviteTeamMemberOpen, setIsInviteTeamMemberOpen] = useState(false)
-  const [isShareDashboardOpen, setIsShareDashboardOpen] = useState(false)
-  const [isImportDataOpen, setIsImportDataOpen] = useState(false)
-  const [isExportDataOpen, setIsExportDataOpen] = useState(false)
-  const [isGenerateReportOpen, setIsGenerateReportOpen] = useState(false)
-  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false)
-  const [isBackupDataOpen, setIsBackupDataOpen] = useState(false)
-  const [isRestoreDataOpen, setIsRestoreDataOpen] = useState(false)
+  });
 
   // Calculate stats
-  const employeeCount = personas.filter((p) => p.type === "Employees").length
-  const vendorCount = personas.filter((p) => p.type === "Vendors").length
-  const customerCount = personas.filter((p) => p.type === "Customers").length
-  const investorCount = personas.filter((p) => p.type === "Investors").length
-  const favoritedPercentage = personas.length > 0 ? Math.round((favorites.length / personas.length) * 100) : 0
+  const employeeCount = Array.isArray(personas) ? personas.filter((p) => p.type === "Employees").length : 0;
+  const vendorCount = Array.isArray(personas) ? personas.filter((p) => p.type === "Vendors").length : 0;
+  const customerCount = Array.isArray(personas) ? personas.filter((p) => p.type === "Customers").length : 0;
+  const investorCount = Array.isArray(personas) ? personas.filter((p) => p.type === "Investors").length : 0;
 
-  // Initialize favorites from personas with isFavorite=true
+  // Ensure personas is an array before calculating favoritedPercentage
+  const favoritedPercentage = personas.length > 0 ? Math.round((favorites.length / personas.length) * 100) : 0;
+
   useEffect(() => {
-    const initialFavorites = personas.filter((persona) => persona.isFavorite)
-    setFavorites(initialFavorites)
-  }, [personas])
+    // Ensure theme is set correctly on the client side
+    if (theme !== "dark" && theme !== "light") {
+      setTheme("light"); // or "dark" based on your default preference
+    }
+  }, [theme, setTheme]);
 
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/personas');
+        const response = await axios.get("http://localhost:5000/api/personas");
         setPersonas(response.data);
       } catch (error) {
-        console.error('Failed to fetch personas:', error);
+        console.error("Failed to fetch personas:", error);
       }
     };
 
     fetchPersonas();
   }, []);
 
-  const toggleFavorite = (id: string, e: React.MouseEvent) => {
-    // Stop event propagation to prevent navigation when clicking the favorite button
-    e.stopPropagation()
+  useEffect(() => {
+    console.log('personas:', personas);
+    if (Array.isArray(personas)) {
+      const initialFavorites = personas.filter((persona) => persona.isFavorite);
+      setFavorites(initialFavorites);
+    }
+  }, [personas]);
 
+  const toggleFavorite = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     setPersonas((prevPersonas) =>
       prevPersonas.map((persona) => (persona.id === id ? { ...persona, isFavorite: !persona.isFavorite } : persona)),
-    )
+    );
 
-    // Update favorites list
-    const persona = personas.find((p) => p.id === id)
+    const persona = personas.find((p) => p.id === id);
     if (persona) {
       if (persona.isFavorite) {
-        setFavorites((prev) => prev.filter((p) => p.id !== id))
+        setFavorites((prev) => prev.filter((p) => p.id !== id));
       } else {
-        setFavorites((prev) => [...prev, { ...persona, isFavorite: true }])
+        setFavorites((prev) => [...prev, { ...persona, isFavorite: true }]);
       }
     }
-  }
+  };
 
   const handleAddPersona = (newPersona: Persona) => {
-    setPersonas((prev) => [...prev, newPersona])
+    setPersonas((prev) => [...prev, newPersona]);
     if (newPersona.isFavorite) {
-      setFavorites((prev) => [...prev, newPersona])
+      setFavorites((prev) => [...prev, newPersona]);
     }
-    setIsAddModalOpen(false)
-  }
+    setIsAddModalOpen(false);
+  };
 
   const applyAdvancedFilter = (criteria: FilterCriteria) => {
-    setFilterCriteria(criteria)
-    setIsAdvancedFilterOpen(false)
-  }
+    setFilterCriteria(criteria);
+    setIsAdvancedFilterOpen(false);
+  };
 
   const resetFilters = () => {
     setFilterCriteria({
@@ -169,114 +175,102 @@ export default function PersonaDashboard() {
       status: [],
       location: [],
       dateAdded: "all",
-    })
-  }
+    });
+  };
 
   const toggleSortDirection = () => {
-    setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-  }
+    setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+  };
 
   const handleSort = (option: SortOption) => {
     if (sortBy === option) {
-      toggleSortDirection()
+      toggleSortDirection();
     } else {
-      setSortBy(option)
-      setSortDirection("asc")
+      setSortBy(option);
+      setSortDirection("asc");
     }
-  }
+  };
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
-  // Define a function to handle printing the summary
   const handlePrintSummary = () => {
-    window.print()
-  }
+    window.print();
+  };
 
-  // Navigate to profile page
   const navigateToProfile = (id: string) => {
-    router.push(`/profile/${id}`)
-  }
+    router.push(`/profile/${id}`);
+  };
 
-  // Filter personas based on search query and advanced filters
-  const filteredPersonas = personas.filter((persona) => {
-    // Text search
+  const filteredPersonas = Array.isArray(personas) ? personas.filter((persona) => {
     const matchesSearch =
       searchQuery === "" ||
       persona.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      persona.email?.toLowerCase().includes(searchQuery.toLowerCase())
+      persona.email?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // Type filter
-    const matchesType = filterCriteria.type.length === 0 || filterCriteria.type.includes(persona.type)
+    const matchesType = filterCriteria.type.length === 0 || filterCriteria.type.includes(persona.type);
 
-    // Status filter
     const matchesStatus =
-      filterCriteria.status.length === 0 || filterCriteria.status.includes(persona.status || "Active")
+      filterCriteria.status.length === 0 || filterCriteria.status.includes(persona.status || "Active");
 
-    // Location filter
-    const matchesLocation = filterCriteria.location.length === 0 || filterCriteria.location.includes(persona.location)
+    const matchesLocation = filterCriteria.location.length === 0 || filterCriteria.location.includes(persona.location);
 
-    // Date filter
-    let matchesDate = true
+    let matchesDate = true;
     if (filterCriteria.dateAdded !== "all") {
-      const addedDate = new Date(persona.added)
-      const now = new Date()
-      const daysDiff = Math.floor((now.getTime() - addedDate.getTime()) / (1000 * 60 * 60 * 24))
+      const addedDate = new Date(persona.added);
+      const now = new Date();
+      const daysDiff = Math.floor((now.getTime() - addedDate.getTime()) / (1000 * 60 * 60 * 24));
 
       switch (filterCriteria.dateAdded) {
         case "today":
-          matchesDate = daysDiff < 1
-          break
+          matchesDate = daysDiff < 1;
+          break;
         case "week":
-          matchesDate = daysDiff < 7
-          break
+          matchesDate = daysDiff < 7;
+          break;
         case "month":
-          matchesDate = daysDiff < 30
-          break
+          matchesDate = daysDiff < 30;
+          break;
         case "quarter":
-          matchesDate = daysDiff < 90
-          break
+          matchesDate = daysDiff < 90;
+          break;
       }
     }
 
-    return matchesSearch && matchesType && matchesStatus && matchesLocation && matchesDate
-  })
+    return matchesSearch && matchesType && matchesStatus && matchesLocation && matchesDate;
+  }) : [];
 
-  // Sort filtered personas
   const sortedPersonas = [...filteredPersonas].sort((a, b) => {
-    let comparison = 0
+    let comparison = 0;
 
     switch (sortBy) {
       case "name":
-        comparison = a.name.localeCompare(b.name)
-        break
+        comparison = a.name.localeCompare(b.name);
+        break;
       case "type":
-        comparison = a.type.localeCompare(b.type)
-        break
+        comparison = a.type.localeCompare(b.type);
+        break;
       case "added":
-        comparison = new Date(a.added).getTime() - new Date(b.added).getTime()
-        break
+        comparison = new Date(a.added).getTime() - new Date(b.added).getTime();
+        break;
       case "recent":
-        // Assuming there's a lastInteraction field, fallback to added date
-        const aDate = a.lastInteraction ? new Date(a.lastInteraction).getTime() : new Date(a.added).getTime()
-        const bDate = b.lastInteraction ? new Date(b.lastInteraction).getTime() : new Date(b.added).getTime()
-        comparison = aDate - bDate
-        break
+        const aDate = a.lastInteraction ? new Date(a.lastInteraction).getTime() : new Date(a.added).getTime();
+        const bDate = b.lastInteraction ? new Date(b.lastInteraction).getTime() : new Date(b.added).getTime();
+        comparison = aDate - bDate;
+        break;
     }
 
-    return sortDirection === "asc" ? comparison : -comparison
-  })
+    return sortDirection === "asc" ? comparison : -comparison;
+  });
 
-  // Get all unique locations for filter
-  const allLocations = Array.from(new Set(personas.map((p) => p.location)))
+  const allLocations = Array.isArray(personas) ? Array.from(new Set(personas.map((p) => p.location))) : [];
 
-  // Active filter count
   const activeFilterCount =
     filterCriteria.type.length +
     filterCriteria.status.length +
     filterCriteria.location.length +
-    (filterCriteria.dateAdded !== "all" ? 1 : 0)
+    (filterCriteria.dateAdded !== "all" ? 1 : 0);
 
   return (
     <div className="container mx-auto p-4 max-w-7xl">
@@ -298,7 +292,6 @@ export default function PersonaDashboard() {
         </div>
       </div>
 
-      {/* Dashboard Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <div className="flex items-center space-x-2">
@@ -348,12 +341,12 @@ export default function PersonaDashboard() {
                             setFilterCriteria({
                               ...filterCriteria,
                               type: [...filterCriteria.type, type],
-                            })
+                            });
                           } else {
                             setFilterCriteria({
                               ...filterCriteria,
                               type: filterCriteria.type.filter((t) => t !== type),
-                            })
+                            });
                           }
                         }}
                       />
@@ -378,12 +371,12 @@ export default function PersonaDashboard() {
                             setFilterCriteria({
                               ...filterCriteria,
                               status: [...filterCriteria.status, status],
-                            })
+                            });
                           } else {
                             setFilterCriteria({
                               ...filterCriteria,
                               status: filterCriteria.status.filter((s) => s !== status),
-                            })
+                            });
                           }
                         }}
                       />
@@ -408,12 +401,12 @@ export default function PersonaDashboard() {
                             setFilterCriteria({
                               ...filterCriteria,
                               location: [...filterCriteria.location, location],
-                            })
+                            });
                           } else {
                             setFilterCriteria({
                               ...filterCriteria,
                               location: filterCriteria.location.filter((l) => l !== location),
-                            })
+                            });
                           }
                         }}
                       />
@@ -433,7 +426,7 @@ export default function PersonaDashboard() {
                     setFilterCriteria({
                       ...filterCriteria,
                       dateAdded: value,
-                    })
+                    });
                   }}
                 >
                   <div className="flex items-center space-x-2">
@@ -848,7 +841,7 @@ export default function PersonaDashboard() {
                     style={{ width: `${favoritedPercentage}%` }}
                   ></div>
                 </div>
-                <div className="text-sm text-gray-500">Favorited: {favoritedPercentage}%</div>
+                <div className="text-sm text-gray-500">Favorite: {favoritedPercentage}%</div>
               </div>
             </CardContent>
           </Card>
@@ -901,5 +894,5 @@ export default function PersonaDashboard() {
       {/* Restore Data Dialog */}
       <RestoreDataDialog isOpen={isRestoreDataOpen} onClose={() => setIsRestoreDataOpen(false)} />
     </div>
-  )
+  );
 }

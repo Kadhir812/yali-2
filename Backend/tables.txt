@@ -1,0 +1,67 @@
+-- Create the database
+CREATE DATABASE persona_db;
+
+-- Connect to the database
+\c persona_db
+
+-- Create the personas table
+CREATE TABLE personas (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) DEFAULT NULL,
+  phone VARCHAR(20) DEFAULT NULL,
+  state VARCHAR(100) DEFAULT NULL,
+  pin_code VARCHAR(10) DEFAULT NULL,
+  type VARCHAR(50) NOT NULL,
+  message TEXT DEFAULT NULL,
+  is_favorite BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the vendors table
+CREATE TABLE vendors (
+  id SERIAL PRIMARY KEY,
+  persona_id INT NOT NULL,
+  address TEXT DEFAULT NULL,
+  pan_number VARCHAR(10) DEFAULT NULL,
+  gst_number VARCHAR(15) DEFAULT NULL,
+  bank_name VARCHAR(255) DEFAULT NULL,
+  account_number VARCHAR(50) DEFAULT NULL,
+  ifsc_code VARCHAR(11) DEFAULT NULL,
+  FOREIGN KEY (persona_id) REFERENCES personas(id) ON DELETE CASCADE
+);
+
+-- Create the employees table
+CREATE TABLE employees (
+  id SERIAL PRIMARY KEY,
+  persona_id INT NOT NULL,
+  date_of_birth DATE DEFAULT NULL,
+  father_name VARCHAR(255) DEFAULT NULL,
+  blood_group VARCHAR(3) DEFAULT NULL,
+  emergency_contact VARCHAR(20) DEFAULT NULL,
+  aadhar_number VARCHAR(12) DEFAULT NULL,
+  joining_date DATE DEFAULT NULL,
+  probation_end_date DATE DEFAULT NULL,
+  previous_employer VARCHAR(255) DEFAULT NULL,
+  FOREIGN KEY (persona_id) REFERENCES personas(id) ON DELETE CASCADE
+);
+
+-- Create the customers table
+CREATE TABLE customers (
+  id SERIAL PRIMARY KEY,
+  persona_id INT NOT NULL,
+  age INT DEFAULT NULL,
+  location VARCHAR(255) DEFAULT NULL,
+  job VARCHAR(255) DEFAULT NULL,
+  income_range VARCHAR(50) DEFAULT NULL,
+  family_members INT DEFAULT NULL,
+  weight DECIMAL(5, 2) DEFAULT NULL,
+  wheelchair_type VARCHAR(50) DEFAULT NULL,
+  daily_commute_range_km INT DEFAULT NULL,
+  commute_mode VARCHAR(50) CHECK (commute_mode IN ('Public Transport', 'Private Vehicle', 'Taxi/Ride-sharing', 'Walking', 'Wheelchair')) DEFAULT NULL,
+  pains_daily TEXT DEFAULT NULL,
+  pains_commute TEXT DEFAULT NULL,
+  solutions_needed TEXT DEFAULT NULL,
+  FOREIGN KEY (persona_id) REFERENCES personas(id) ON DELETE CASCADE
+);
