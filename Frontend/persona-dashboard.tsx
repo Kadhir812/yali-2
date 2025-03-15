@@ -121,42 +121,74 @@ export default function PersonaDashboard() {
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/personas');
-        setPersonas(response.data);
+        const response = await axios.get("http://localhost:5000/api/personas");
+
+        const formattedData = response.data.map((persona: any) => ({
+          ...persona,
+          persona_id: persona.persona_id || persona.id, // ✅ Ensure persona_id exists
+          isFavorite: persona.is_favorite, // ✅ Fix casing
+        }));
+
+        setPersonas(formattedData);
+        setFavorites(formattedData.filter((p) => p.isFavorite));
       } catch (error) {
-        console.error('Failed to fetch personas:', error);
+        console.error("Failed to fetch personas:", error);
       }
     };
 
     fetchPersonas();
   }, []);
 
-  const toggleFavorite = (id: string, e: React.MouseEvent) => {
-    // Stop event propagation to prevent navigation when clicking the favorite button
-    e.stopPropagation()
 
-    setPersonas((prevPersonas) =>
-      prevPersonas.map((persona) => (persona.id === id ? { ...persona, isFavorite: !persona.isFavorite } : persona)),
-    )
 
-    // Update favorites list
-    const persona = personas.find((p) => p.id === id)
-    if (persona) {
-      if (persona.isFavorite) {
-        setFavorites((prev) => prev.filter((p) => p.id !== id))
-      } else {
-        setFavorites((prev) => [...prev, { ...persona, isFavorite: true }])
+  const toggleFavorite = async (persona_id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    try {
+      // ✅ Find the correct persona
+      const updatedPersonas = personas.map((persona) =>
+        persona.persona_id === persona_id
+          ? { ...persona, isFavorite: !persona.isFavorite }
+          : persona
+      );
+
+      setPersonas(updatedPersonas);
+
+      // ✅ Ensure we send the correct field to the backend (`is_favorite` instead of `isFavorite`)
+      await axios.patch(`http://localhost:5000/api/personas/${persona_id}`, {
+        is_favorite: updatedPersonas.find((p) => p.persona_id === persona_id)?.isFavorite,
+      });
+
+      // ✅ Update the favorites list correctly
+      setFavorites(updatedPersonas.filter((p) => p.isFavorite));
+    } catch (error) {
+      console.error("Failed to update favorite status:", error);
+    }
+  };
+
+
+
+
+
+  // 🟢 **Add Persona (Ensures Data Persistence)**
+  const handleAddPersona = async (newPersona: Persona) => {
+    try {
+      const response = await axios.post("http://localhost:5000/api/personas", newPersona);
+      const savedPersona = response.data;
+
+      setPersonas((prev) => [...prev, savedPersona]);
+
+      if (savedPersona.is_favorite) {
+        setFavorites((prev) => [...prev, savedPersona]);
       }
-    }
-  }
 
-  const handleAddPersona = (newPersona: Persona) => {
-    setPersonas((prev) => [...prev, newPersona])
-    if (newPersona.isFavorite) {
-      setFavorites((prev) => [...prev, newPersona])
+      setIsAddModalOpen(false);
+    } catch (error) {
+      console.error("Failed to add persona:", error);
+      alert("Error adding persona. Please check your inputs and try again.");
     }
-    setIsAddModalOpen(false)
-  }
+  };
+
 
   const applyAdvancedFilter = (criteria: FilterCriteria) => {
     setFilterCriteria(criteria)
@@ -598,23 +630,23 @@ export default function PersonaDashboard() {
                   </div>
                 </div>
 
+                {/* Grid View */}
                 {favViewMode === "grid" && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {favorites.map((persona) => (
                       <div
-                        key={persona.id}
+                        key={persona.persona_id} // ✅ Ensure persona_id is used as the unique key
                         className="flex flex-col items-center text-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        onClick={() => navigateToProfile(persona.id)}
+                        onClick={() => navigateToProfile(persona.persona_id)}
                       >
                         <div className="w-16 h-16 bg-gray-200 rounded-full mb-2 relative">
-                          {/* Placeholder for avatar */}
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={(e) => toggleFavorite(persona.id, e)}
+                            onClick={(e) => toggleFavorite(persona.persona_id, e)} // ✅ Correct persona_id
                             className="absolute -top-2 -right-2 h-6 w-6 text-amber-400 bg-white rounded-full shadow-sm"
                           >
-                            <Star className="h-4 w-4 fill-current" />
+                            <Star className={`h-4 w-4 ${persona.isFavorite ? "fill-current" : ""}`} />
                           </Button>
                         </div>
                         <h3 className="font-semibold text-sm">{persona.name}</h3>
@@ -622,68 +654,7 @@ export default function PersonaDashboard() {
                         <p className="text-xs text-gray-500 truncate max-w-full">{persona.email}</p>
                       </div>
                     ))}
-                  </div>
-                )}
 
-                {favViewMode === "card" && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {favorites.map((persona) => (
-                      <div
-                        key={persona.id}
-                        className="border rounded-lg p-4 flex justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        onClick={() => navigateToProfile(persona.id)}
-                      >
-                        <div>
-                          <h3 className="font-semibold text-lg">{persona.name}</h3>
-                          <p className="text-gray-500">{persona.type}</p>
-                          {persona.role && <p>Role: {persona.role}</p>}
-                          {persona.department && <p>Dept: {persona.department}</p>}
-                          {persona.category && <p>Category: {persona.category}</p>}
-                          {persona.investment && <p>Investment: {persona.investment}</p>}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => toggleFavorite(persona.id, e)}
-                          className="h-8 w-8 text-amber-400"
-                        >
-                          <Star className="h-5 w-5 fill-current" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {favViewMode === "list" && (
-                  <div className="space-y-2">
-                    {favorites.map((persona) => (
-                      <div
-                        key={persona.id}
-                        className="flex items-center border-b pb-2 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        onClick={() => navigateToProfile(persona.id)}
-                      >
-                        <div className="w-10 h-10 bg-gray-200 rounded-full mr-3"></div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center">
-                            <h3 className="font-semibold">{persona.name}</h3>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => toggleFavorite(persona.id, e)}
-                              className="h-6 w-6 text-amber-400"
-                            >
-                              <Star className="h-4 w-4 fill-current" />
-                            </Button>
-                          </div>
-                          <div className="flex items-center text-sm text-gray-500">
-                            <Badge variant="outline" className="mr-2">
-                              {persona.type}
-                            </Badge>
-                            <span>{persona.email}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 )}
               </CardContent>
@@ -726,9 +697,9 @@ export default function PersonaDashboard() {
                 <div className="space-y-2">
                   {sortedPersonas.map((persona) => (
                     <div
-                      key={persona.id}
+                      key={persona.persona_id} // ✅ Use persona_id instead of id
                       className="flex items-center p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-colors"
-                      onClick={() => navigateToProfile(persona.id)}
+                      onClick={() => navigateToProfile(persona.persona_id)}
                     >
                       <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full mr-3"></div>
                       <div className="flex-1 min-w-0">
@@ -750,59 +721,11 @@ export default function PersonaDashboard() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={(e) => toggleFavorite(persona.id, e)}
+                          onClick={(e) => toggleFavorite(persona.persona_id, e)} // ✅ Use persona_id
                           className={`h-8 w-8 ${persona.isFavorite ? "text-amber-400" : "text-gray-400"}`}
                         >
                           <Star className={`h-4 w-4 ${persona.isFavorite ? "fill-current" : ""}`} />
                         </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {viewMode === "list" && (
-                <div className="space-y-6">
-                  {sortedPersonas.map((persona) => (
-                    <div
-                      key={persona.id}
-                      className="flex items-start border-b pb-4 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                      onClick={() => navigateToProfile(persona.id)}
-                    >
-                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full mr-4"></div>
-                      <div className="flex-1">
-                        <div className="flex justify-between">
-                          <h3 className="font-semibold text-lg">{persona.name}</h3>
-                          <div className="flex items-center space-x-2">
-                            <Badge variant={persona.type === "Customers" ? "default" : "outline"}>{persona.type}</Badge>
-                            <Badge
-                              variant="outline"
-                              className="bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800"
-                            >
-                              Active
-                            </Badge>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => toggleFavorite(persona.id, e)}
-                              className={persona.isFavorite ? "text-amber-400" : "text-gray-400"}
-                            >
-                              <Star className={`h-5 w-5 ${persona.isFavorite ? "fill-current" : ""}`} />
-                            </Button>
-                          </div>
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-400">{persona.email}</p>
-                        <p className="text-gray-600 dark:text-gray-400">{persona.phone}</p>
-                        <div className="flex justify-between mt-2">
-                          <div className="flex items-center text-gray-600 dark:text-gray-400">
-                            <MapPin className="h-4 w-4 mr-1" />
-                            {persona.location}
-                          </div>
-                          {persona.revenue && (
-                            <p className="text-gray-600 dark:text-gray-400">Revenue: {persona.revenue}</p>
-                          )}
-                        </div>
-                        <p className="text-gray-500 dark:text-gray-500 text-sm mt-1">Added: {persona.added}</p>
                       </div>
                     </div>
                   ))}

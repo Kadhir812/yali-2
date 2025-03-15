@@ -25,9 +25,10 @@ const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }).optional().or(z.literal("")),
   phone: z.string().optional().or(z.literal("")),
   state: z.string().optional().or(z.literal("")),
-  pinCode: z.string().optional().or(z.literal("")),
+  pin_code: z.string().optional().or(z.literal("")),
   message: z.string().optional().or(z.literal("")),
   type: z.string({ required_error: "Please select a persona type." }),
+  is_Favorite: z.boolean().default(false),
   // Vendor specific fields
   address: z.string().optional().or(z.literal("")),
   panNumber: z.string().optional().or(z.literal("")),
@@ -63,7 +64,7 @@ const formSchema = z.object({
   solutionsNeeded: z.string().optional().or(z.literal("")),
   customerSegment: z.string().optional().or(z.literal("")),
   expectedGain: z.string().optional().or(z.literal("")),
-  isFavorite: z.boolean().default(false),
+  
 })
 
 interface AddPersonaModalProps {
@@ -73,7 +74,9 @@ interface AddPersonaModalProps {
 }
 
 const AddPersonaModal = ({ isOpen, onClose, onAdd }: AddPersonaModalProps) => {
-  const [activeTab, setActiveTab] = useState("basic")
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [activeTab, setActiveTab] = useState("basic");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -82,56 +85,35 @@ const AddPersonaModal = ({ isOpen, onClose, onAdd }: AddPersonaModalProps) => {
       email: "",
       phone: "",
       state: "",
-      pinCode: "",
+      pin_code: "",
       message: "",
       type: "Employees",
-      // Vendor specific
-      address: "",
-      panNumber: "",
-      gstNumber: "",
-      bankName: "",
-      accountNumber: "",
-      ifscCode: "",
-      // Employee specific
-      dateOfBirth: "",
-      fatherName: "",
-      bloodGroup: "",
-      emergencyContact: "",
-      aadharNumber: "",
-      joiningDate: "",
-      probationEndDate: "",
-      previousEmployer: "",
-      // User specific
-      age: "",
-      location: "",
-      job: "",
-      income: "",
-      familyMembers: "",
-      weight: "",
-      interests: "",
-      userType: "",
-      wheelchairType: "",
-      commuteRange: "",
-      commuteMode: "",
-      speed: "",
-      commonPlace: "",
-      painsDaily: "",
-      painsCommute: "",
-      solutionsNeeded: "",
-      isFavorite: false,
+      is_Favorite: false,
     },
-  })
+  });
+
+  const API_BASE_URL = "http://localhost:5000/api";
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setLoading(true);
+    setErrorMsg("");
+
     try {
-      const response = await axios.post('http://localhost:5000/api/personas', values);
+      const response = await axios.post(`${API_BASE_URL}/personas`, {
+        ...values, // Send all fields to backend (Backend should handle insertion into correct table)
+      });
+
       onAdd(response.data);
       form.reset();
       onClose();
-    } catch (error) {
-      console.error('Failed to add persona:', error);
+    } catch (error: any) {
+      setErrorMsg(error.response?.data?.error || "Failed to add persona. Please try again.");
+      console.error("Failed to add persona:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -207,7 +189,7 @@ const AddPersonaModal = ({ isOpen, onClose, onAdd }: AddPersonaModalProps) => {
 
                 <FormField
                   control={form.control}
-                  name="pinCode"
+                  name="pin_code"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>PIN Code</FormLabel>
@@ -260,7 +242,7 @@ const AddPersonaModal = ({ isOpen, onClose, onAdd }: AddPersonaModalProps) => {
 
                 <FormField
                   control={form.control}
-                  name="isFavorite"
+                  name="is_Favorite"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
                       <FormControl>
