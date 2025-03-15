@@ -1,12 +1,13 @@
-import { ThemeProvider } from "next-themes";
-import type { AppProps } from "next/app";
+"use client"
 
-function MyApp({ Component, pageProps }: AppProps) {
+import { ThemeProvider } from "./components/theme-provider"
+import PersonaDashboard from "./persona-dashboard"
+
+export default function Preview() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <Component {...pageProps} />
+      <PersonaDashboard />
     </ThemeProvider>
-  );
+  )
 }
 
-export default MyApp;
